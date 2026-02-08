@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { Task } from '@/types/task';
-import { Clock, Timer, CheckCircle2, Bookmark, BookmarkCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, Timer, CheckCircle2, BookmarkCheck } from 'lucide-react';
 
 interface TimeAnalyticsProps {
   tasks: Task[];
@@ -23,7 +22,7 @@ const formatTime = (seconds: number) => {
   return parts.join(' ');
 };
 
-const TimeAnalytics = ({ tasks, onRemember }: TimeAnalyticsProps) => {
+const TimeAnalytics = ({ tasks }: Omit<TimeAnalyticsProps, 'onRemember'>) => {
   const totalSeconds = tasks.reduce((acc, task) => acc + task.timeSpent, 0);
   const completedTasksCount = tasks.filter(t => t.subtasks.length > 0 && t.subtasks.every(s => s.completed)).length;
 
@@ -81,18 +80,6 @@ const TimeAnalytics = ({ tasks, onRemember }: TimeAnalyticsProps) => {
                       )}
                     </div>
                   </div>
-                  
-                  {!task.isRemembered && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => onRemember(task.id)}
-                      className="text-indigo-600 hover:bg-indigo-50 gap-2 font-bold text-xs rounded-xl"
-                    >
-                      <Bookmark size={14} />
-                      Remember
-                    </Button>
-                  )}
                 </div>
               );
             })}

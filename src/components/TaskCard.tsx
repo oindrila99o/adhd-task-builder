@@ -7,7 +7,7 @@ import ManualTimeLog from './ManualTimeLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Trash2, ChevronDown, ChevronUp, Loader2, Split, Play, Pause, Clock } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Loader2, Split, Play, Pause, Clock, Bookmark, BookmarkCheck } from 'lucide-react';
 
 interface TaskCardProps {
   task: Task;
@@ -16,6 +16,7 @@ interface TaskCardProps {
   onBreakdown: (taskId: string) => Promise<void>;
   onUpdateTime: (taskId: string, seconds: number, isRunning: boolean) => void;
   onUpdateSubtaskTime: (taskId: string, subtaskId: string, seconds: number, isRunning: boolean) => void;
+  onRemember: (taskId: string) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -26,7 +27,7 @@ const formatTime = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTime, onUpdateSubtaskTime }: TaskCardProps) => {
+const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTime, onUpdateSubtaskTime, onRemember }: TaskCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isBreakingDown, setIsBreakingDown] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -112,6 +113,11 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
                 <Clock size={10} />
                 {formatTime(task.timeSpent)}
               </div>
+              {task.isRemembered && (
+                <div className="bg-amber-50 text-amber-600 p-1 rounded-full" title="Time Remembered">
+                  <BookmarkCheck size={14} />
+                </div>
+              )}
             </div>
             {totalCount > 0 ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -122,6 +128,18 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {!task.isRemembered && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => onRemember(task.id)}
+                className="text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-full"
+                title="Remember time taken"
+              >
+                <Bookmark size={18} />
+              </Button>
+            )}
+            
             <Button 
               variant="ghost" 
               size="icon" 

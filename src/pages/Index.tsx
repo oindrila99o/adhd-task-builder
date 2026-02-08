@@ -258,7 +258,7 @@ const Index = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="analytics">
-                  <TimeAnalytics tasks={tasks} onRemember={handleRememberTask} />
+                  <TimeAnalytics tasks={tasks} />
                 </TabsContent>
                 <TabsContent value="rules">
                   <TemplateManager 
@@ -331,6 +331,7 @@ const Index = () => {
                       onBreakdown={handleBreakdownTask}
                       onUpdateTime={handleUpdateTime}
                       onUpdateSubtaskTime={handleUpdateSubtaskTime}
+                      onRemember={handleRememberTask}
                     />
                   ))}
                 </div>
