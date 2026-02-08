@@ -16,7 +16,8 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown }: TaskCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Changed default state to false so it starts collapsed
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isBreakingDown, setIsBreakingDown] = useState(false);
   
   const completedCount = task.subtasks.filter(s => s.completed).length;
@@ -27,6 +28,7 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown }: TaskCard
     setIsBreakingDown(true);
     await onBreakdown(task.id);
     setIsBreakingDown(false);
+    // Automatically expand when new subtasks are generated
     setIsExpanded(true);
   };
 
