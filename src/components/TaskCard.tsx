@@ -6,7 +6,7 @@ import SubtaskItem from './SubtaskItem';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Trash2, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Loader2, Split } from 'lucide-react';
 
 interface TaskCardProps {
   task: Task;
@@ -49,18 +49,18 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown }: TaskCard
           <div className="flex items-center gap-1 shrink-0">
             {totalCount === 0 && (
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 size="sm"
                 onClick={handleBreakdownClick}
                 disabled={isBreakingDown}
-                className="h-9 rounded-lg border-indigo-100 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 gap-2"
+                className="h-9 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none font-semibold px-4 gap-2"
               >
                 {isBreakingDown ? (
                   <Loader2 className="animate-spin" size={16} />
                 ) : (
                   <>
-                    <Sparkles size={16} />
-                    <span className="hidden sm:inline">Break Down</span>
+                    <Split size={16} />
+                    <span>Break Down</span>
                   </>
                 )}
               </Button>
