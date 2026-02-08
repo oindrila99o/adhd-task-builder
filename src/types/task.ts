@@ -1,3 +1,5 @@
+export type EnergyLevel = 'high' | 'mid' | 'low';
+
 export interface Subtask {
   id: string;
   title: string;
@@ -17,6 +19,7 @@ export interface Task {
   isTimerRunning?: boolean;
   lastTimerStart?: number; // timestamp
   isRemembered?: boolean;
+  energyLevel?: EnergyLevel;
 }
 
 export interface DailyTask {

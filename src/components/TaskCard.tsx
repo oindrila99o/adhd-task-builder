@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Task } from '@/types/task';
+import { Task, EnergyLevel } from '@/types/task';
 import SubtaskItem from './SubtaskItem';
 import ManualTimeLog from './ManualTimeLog';
 import { Progress } from '@/components/ui/progress';
@@ -16,9 +16,18 @@ import {
   Pause, 
   Clock, 
   Bookmark, 
-  BookmarkCheck
+  BookmarkCheck,
+  Zap,
+  BatteryMedium,
+  BatteryLow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TaskCardProps {
   task: Task;
@@ -27,7 +36,7 @@ interface TaskCardProps {
   onBreakdown: (taskId: string) => Promise<void>;
   onUpdateTime: (taskId: string, seconds: number, isRunning: boolean) => void;
   onUpdateSubtaskTime: (taskId: string, subtaskId: string, seconds: number, isRunning: boolean) => void;
-  onRemember: (taskId: string) => void;
+  onRemember: (taskId: string, energy: EnergyLevel) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -146,19 +155,37 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
 
             <div className="flex items-center gap-1">
               {task.isRemembered ? (
-                <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
+                <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full flex items-center gap-1" title={`Remembered with ${task.energyLevel} energy`}>
                   <BookmarkCheck size={14} />
+                  {task.energyLevel === 'high' && <Zap size={10} />}
+                  {task.energyLevel === 'mid' && <BatteryMedium size={10} />}
+                  {task.energyLevel === 'low' && <BatteryLow size={10} />}
                 </div>
               ) : (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => onRemember(task.id)}
-                  className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                  title="Remember time taken"
-                >
-                  <Bookmark size={14} />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                      title="Remember time taken"
+                    >
+                      <Bookmark size={14} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="rounded-2xl p-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 py-1">Energy Level?</p>
+                    <DropdownMenuItem onClick={() => onRemember(task.id, 'high')} className="rounded-xl gap-2 cursor-pointer">
+                      <Zap size={14} className="text-amber-500" /> High Energy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onRemember(task.id, 'mid')} className="rounded-xl gap-2 cursor-pointer">
+                      <BatteryMedium size={14} className="text-blue-500" /> Mid Energy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onRemember(task.id, 'low')} className="rounded-xl gap-2 cursor-pointer">
+                      <BatteryLow size={14} className="text-slate-500" /> Low Energy
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
 
               <Button 

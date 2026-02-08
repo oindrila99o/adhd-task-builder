@@ -5,7 +5,7 @@ import { TaskTemplate } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Save } from 'lucide-react';
+import { Trash2, Plus, Save, Search } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 interface TemplateManagerProps {
@@ -18,6 +18,11 @@ const TemplateManager = ({ templates, onSaveTemplate, onDeleteTemplate }: Templa
   const [trigger, setTrigger] = useState('');
   const [subtaskInput, setSubtaskInput] = useState('');
   const [currentSubtasks, setCurrentSubtasks] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+
+  const filteredTemplates = templates.filter(t => 
+    t.trigger.toLowerCase().includes(search.toLowerCase())
+  );
 
   const addSubtask = () => {
     if (!subtaskInput.trim()) return;
@@ -86,12 +91,24 @@ const TemplateManager = ({ templates, onSaveTemplate, onDeleteTemplate }: Templa
       </div>
 
       <div className="space-y-4">
-        <h4 className="font-bold text-slate-800">Your Saved Breakdowns</h4>
-        {templates.length === 0 ? (
-          <p className="text-sm text-slate-400 italic">No custom rules yet.</p>
+        <div className="flex items-center justify-between gap-4">
+          <h4 className="font-bold text-slate-800 shrink-0">Your Saved Breakdowns</h4>
+          <div className="relative flex-1 max-w-[180px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <Input 
+              placeholder="Search rules..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 rounded-xl text-xs border-slate-200"
+            />
+          </div>
+        </div>
+
+        {filteredTemplates.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No matching rules.</p>
         ) : (
           <div className="space-y-3">
-            {templates.map((t) => (
+            {filteredTemplates.map((t) => (
               <div key={t.id} className="p-3 border border-slate-100 rounded-xl flex items-center justify-between group hover:bg-slate-50 transition-colors">
                 <div>
                   <p className="font-semibold text-sm text-slate-700 capitalize">{t.trigger}</p>

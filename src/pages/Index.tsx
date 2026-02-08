@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Task, TaskTemplate, DailyTask } from '@/types/task';
+import { Task, TaskTemplate, DailyTask, EnergyLevel } from '@/types/task';
 import TaskInput from '@/components/TaskInput';
 import TaskCard from '@/components/TaskCard';
 import TemplateManager from '@/components/TemplateManager';
 import TimeAnalytics from '@/components/TimeAnalytics';
 import DailyTaskSection from '@/components/DailyTaskSection';
+import EnergySelector from '@/components/EnergySelector';
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { ListTodo, Sparkles, Menu, BrainCircuit, Timer, CalendarDays } from 'lucide-react';
 import { simulateTaskBreakdown } from '@/utils/breakdown';
@@ -33,11 +34,13 @@ const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
+  const [currentEnergy, setCurrentEnergy] = useState<EnergyLevel>('mid');
 
   useEffect(() => {
     const savedTasks = localStorage.getItem('tasksplit_tasks');
     const savedTemplates = localStorage.getItem('tasksplit_templates');
     const savedDaily = localStorage.getItem('tasksplit_daily');
+    const savedEnergy = localStorage.getItem('tasksplit_energy');
     
     if (savedTasks) {
       const parsed = JSON.parse(savedTasks);
@@ -52,6 +55,7 @@ const Index = () => {
       })));
     }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
+    if (savedEnergy) setCurrentEnergy(savedEnergy as EnergyLevel);
 
     const today = new Date().toISOString().split('T')[0];
     let currentDaily: DailyTask[] = [];
@@ -88,6 +92,10 @@ const Index = () => {
     localStorage.setItem('tasksplit_daily', JSON.stringify(dailyTasks));
   }, [dailyTasks]);
 
+  useEffect(() => {
+    localStorage.setItem('tasksplit_energy', currentEnergy);
+  }, [currentEnergy]);
+
   const handleAddTask = (newTask: Task) => {
     setTasks([{ ...newTask, timeSpent: 0, isTimerRunning: false, isRemembered: false }, ...tasks]);
   };
@@ -96,9 +104,9 @@ const Index = () => {
     setTasks(tasks.filter(t => t.id !== taskId));
   };
 
-  const handleRememberTask = (taskId: string) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, isRemembered: true } : t));
-    showSuccess("Task time remembered!");
+  const handleRememberTask = (taskId: string, energy: EnergyLevel) => {
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, isRemembered: true, energyLevel: energy } : t));
+    showSuccess(`Task time remembered with ${energy} energy!`);
   };
 
   const handleToggleSubtask = (taskId: string, subtaskId: string) => {
@@ -279,6 +287,10 @@ const Index = () => {
             Big goals, <br />
             <span className="text-indigo-600">small steps.</span>
           </h2>
+          
+          <div className="max-w-xs mx-auto">
+            <EnergySelector currentLevel={currentEnergy} onSelect={setCurrentEnergy} />
+          </div>
         </section>
 
         <Tabs defaultValue="tasks" className="w-full">
@@ -331,7 +343,7 @@ const Index = () => {
                       onBreakdown={handleBreakdownTask}
                       onUpdateTime={handleUpdateTime}
                       onUpdateSubtaskTime={handleUpdateSubtaskTime}
-                      onRemember={handleRememberTask}
+                      onRemember={(taskId, energy) => handleRememberTask(taskId, energy)}
                     />
                   ))}
                 </div>
