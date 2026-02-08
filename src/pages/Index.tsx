@@ -237,13 +237,10 @@ const Index = () => {
             Big goals, <br />
             <span className="text-indigo-600">small steps.</span>
           </h2>
-          <div className="pt-4">
-            <TaskInput onAddTask={handleAddTask} />
-          </div>
         </section>
 
         <Tabs defaultValue="tasks" className="w-full">
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-12">
             <TabsList className="bg-white border border-slate-100 p-1 h-14 rounded-2xl shadow-sm">
               <TabsTrigger 
                 value="tasks" 
@@ -262,34 +259,40 @@ const Index = () => {
             </TabsList>
           </div>
 
-          <TabsContent value="tasks" className="space-y-8 outline-none">
-            <div className="flex items-center gap-2 mb-2">
-              <ListTodo className="text-indigo-600" size={20} />
-              <h3 className="text-xl font-bold text-slate-800">Your Tasks</h3>
+          <TabsContent value="tasks" className="space-y-12 outline-none">
+            <div className="max-w-2xl mx-auto w-full">
+              <TaskInput onAddTask={handleAddTask} />
             </div>
 
-            {tasks.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ListTodo className="text-slate-300" size={32} />
+            <div className="space-y-8">
+              <div className="flex items-center gap-2 mb-2">
+                <ListTodo className="text-indigo-600" size={20} />
+                <h3 className="text-xl font-bold text-slate-800">Your Tasks</h3>
+              </div>
+
+              {tasks.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ListTodo className="text-slate-300" size={32} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-slate-600">Your list is empty</h4>
+                  <p className="text-slate-400">Add a task above to get started.</p>
                 </div>
-                <h4 className="text-lg font-semibold text-slate-600">Your list is empty</h4>
-                <p className="text-slate-400">Add a task above to get started.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {tasks.map(task => (
-                  <TaskCard 
-                    key={task.id} 
-                    task={task} 
-                    onToggleSubtask={handleToggleSubtask}
-                    onDeleteTask={handleDeleteTask}
-                    onBreakdown={handleBreakdownTask}
-                    onUpdateTime={handleUpdateTime}
-                  />
-                ))}
-              </div>
-            )}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {tasks.map(task => (
+                    <TaskCard 
+                      key={task.id} 
+                      task={task} 
+                      onToggleSubtask={handleToggleSubtask}
+                      onDeleteTask={handleDeleteTask}
+                      onBreakdown={handleBreakdownTask}
+                      onUpdateTime={handleUpdateTime}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="daily" className="outline-none">
