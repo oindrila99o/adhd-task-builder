@@ -4,6 +4,7 @@ export interface Subtask {
   completed: boolean;
   timeSpent: number; // in seconds
   isTimerRunning?: boolean;
+  completedAt?: Date;
 }
 
 export interface Task {

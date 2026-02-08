@@ -45,7 +45,11 @@ const Index = () => {
       setTasks(parsed.map((t: Task) => ({ 
         ...t, 
         isTimerRunning: false,
-        subtasks: t.subtasks.map(s => ({ ...s, isTimerRunning: false }))
+        subtasks: t.subtasks.map(s => ({ 
+          ...s, 
+          isTimerRunning: false,
+          completedAt: s.completedAt ? new Date(s.completedAt) : undefined
+        }))
       })));
     }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
@@ -99,7 +103,14 @@ const Index = () => {
         return {
           ...task,
           subtasks: task.subtasks.map(sub => 
-            sub.id === subtaskId ? { ...sub, completed: !sub.completed, isTimerRunning: false } : sub
+            sub.id === subtaskId 
+              ? { 
+                  ...sub, 
+                  completed: !sub.completed, 
+                  isTimerRunning: false,
+                  completedAt: !sub.completed ? new Date() : undefined
+                } 
+              : sub
           )
         };
       }
