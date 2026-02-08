@@ -15,6 +15,7 @@ interface TaskCardProps {
   onDeleteTask: (taskId: string) => void;
   onBreakdown: (taskId: string) => Promise<void>;
   onUpdateTime: (taskId: string, seconds: number, isRunning: boolean) => void;
+  onUpdateSubtaskTime: (taskId: string, subtaskId: string, seconds: number, isRunning: boolean) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -25,7 +26,7 @@ const formatTime = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTime }: TaskCardProps) => {
+const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTime, onUpdateSubtaskTime }: TaskCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isBreakingDown, setIsBreakingDown] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -35,17 +36,26 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   useEffect(() => {
-    if (task.isTimerRunning) {
+    const activeSubtask = task.subtasks.find(s => s.isTimerRunning);
+    
+    if (task.isTimerRunning || activeSubtask) {
       timerRef.current = setInterval(() => {
-        onUpdateTime(task.id, task.timeSpent + 1, true);
+        if (activeSubtask) {
+          onUpdateSubtaskTime(task.id, activeSubtask.id, activeSubtask.timeSpent + 1, true);
+          // Also update main task time
+          onUpdateTime(task.id, task.timeSpent + 1, true);
+        } else if (task.isTimerRunning) {
+          onUpdateTime(task.id, task.timeSpent + 1, true);
+        }
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
     }
+    
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [task.isTimerRunning, task.timeSpent, task.id, onUpdateTime]);
+  }, [task.isTimerRunning, task.timeSpent, task.subtasks, task.id, onUpdateTime, onUpdateSubtaskTime]);
 
   const handleBreakdownClick = async () => {
     setIsBreakingDown(true);
@@ -54,8 +64,33 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
     setIsExpanded(true);
   };
 
-  const toggleTimer = () => {
+  const toggleMainTimer = () => {
+    // If we start main timer, stop any active subtask timers
+    if (!task.isTimerRunning) {
+      task.subtasks.forEach(s => {
+        if (s.isTimerRunning) onUpdateSubtaskTime(task.id, s.id, s.timeSpent, false);
+      });
+    }
     onUpdateTime(task.id, task.timeSpent, !task.isTimerRunning);
+  };
+
+  const toggleSubtaskTimer = (subtaskId: string) => {
+    const subtask = task.subtasks.find(s => s.id === subtaskId);
+    if (!subtask) return;
+
+    const newIsRunning = !subtask.isTimerRunning;
+
+    // If we're starting a subtask timer, stop the main task timer and other subtask timers
+    if (newIsRunning) {
+      if (task.isTimerRunning) onUpdateTime(task.id, task.timeSpent, false);
+      task.subtasks.forEach(s => {
+        if (s.id !== subtaskId && s.isTimerRunning) {
+          onUpdateSubtaskTime(task.id, s.id, s.timeSpent, false);
+        }
+      });
+    }
+
+    onUpdateSubtaskTime(task.id, subtaskId, subtask.timeSpent, newIsRunning);
   };
 
   const handleManualLog = (seconds: number) => {
@@ -86,7 +121,7 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={toggleTimer}
+              onClick={toggleMainTimer}
               className={`rounded-full ${task.isTimerRunning ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
             >
               {task.isTimerRunning ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
@@ -126,7 +161,13 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
                 key={subtask.id}
                 title={subtask.title}
                 completed={subtask.completed}
+                timeSpent={subtask.timeSpent}
+                isTimerRunning={subtask.isTimerRunning}
                 onToggle={() => onToggleSubtask(task.id, subtask.id)}
+                onToggleTimer={(e) => {
+                  e.stopPropagation();
+                  toggleSubtaskTimer(subtask.id);
+                }}
               />
             ))}
           </div>

@@ -42,7 +42,11 @@ const Index = () => {
     
     if (savedTasks) {
       const parsed = JSON.parse(savedTasks);
-      setTasks(parsed.map((t: Task) => ({ ...t, isTimerRunning: false })));
+      setTasks(parsed.map((t: Task) => ({ 
+        ...t, 
+        isTimerRunning: false,
+        subtasks: t.subtasks.map(s => ({ ...s, isTimerRunning: false }))
+      })));
     }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
 
@@ -51,11 +55,9 @@ const Index = () => {
 
     if (savedDaily) {
       const parsedDaily = JSON.parse(savedDaily);
-      // Filter for today's tasks only
       currentDaily = parsedDaily.filter((t: DailyTask) => t.date === today);
     }
 
-    // If it's a new day or no AI tasks exist for today, add them
     const hasAiTasks = currentDaily.some(t => t.isAiSuggested);
     if (!hasAiTasks) {
       const aiTasks: DailyTask[] = AI_DAILY_SUGGESTIONS.map(title => ({
@@ -97,7 +99,7 @@ const Index = () => {
         return {
           ...task,
           subtasks: task.subtasks.map(sub => 
-            sub.id === subtaskId ? { ...sub, completed: !sub.completed } : sub
+            sub.id === subtaskId ? { ...sub, completed: !sub.completed, isTimerRunning: false } : sub
           )
         };
       }
@@ -109,6 +111,20 @@ const Index = () => {
     setTasks(prev => prev.map(t => 
       t.id === taskId ? { ...t, timeSpent: seconds, isTimerRunning: isRunning } : t
     ));
+  }, []);
+
+  const handleUpdateSubtaskTime = useCallback((taskId: string, subtaskId: string, seconds: number, isRunning: boolean) => {
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          subtasks: task.subtasks.map(sub => 
+            sub.id === subtaskId ? { ...sub, timeSpent: seconds, isTimerRunning: isRunning } : sub
+          )
+        };
+      }
+      return task;
+    }));
   }, []);
 
   const handleBreakdownTask = async (taskId: string) => {
@@ -138,7 +154,9 @@ const Index = () => {
             subtasks: subtaskTitles.map(title => ({
               id: crypto.randomUUID(),
               title,
-              completed: false
+              completed: false,
+              timeSpent: 0,
+              isTimerRunning: false
             }))
           };
         }
@@ -157,7 +175,6 @@ const Index = () => {
     setTemplates(templates.filter(t => t.id !== id));
   };
 
-  // Daily Ritual Handlers
   const handleToggleDaily = (id: string) => {
     setDailyTasks(dailyTasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
@@ -288,6 +305,7 @@ const Index = () => {
                       onDeleteTask={handleDeleteTask}
                       onBreakdown={handleBreakdownTask}
                       onUpdateTime={handleUpdateTime}
+                      onUpdateSubtaskTime={handleUpdateSubtaskTime}
                     />
                   ))}
                 </div>

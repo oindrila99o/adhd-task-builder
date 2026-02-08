@@ -2,6 +2,8 @@ export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
+  timeSpent: number; // in seconds
+  isTimerRunning?: boolean;
 }
 
 export interface Task {
