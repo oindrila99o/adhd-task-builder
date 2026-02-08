@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Task, TaskTemplate } from '@/types/task';
 import TaskInput from '@/components/TaskInput';
 import TaskCard from '@/components/TaskCard';
 import TemplateManager from '@/components/TemplateManager';
+import TimeAnalytics from '@/components/TimeAnalytics';
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { ListTodo, Sparkles, Menu, Settings, BrainCircuit } from 'lucide-react';
+import { ListTodo, Sparkles, Menu, BrainCircuit, Timer } from 'lucide-react';
 import { simulateTaskBreakdown } from '@/utils/breakdown';
 import { showSuccess, showError } from '@/utils/toast';
 import {
@@ -18,6 +19,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -26,7 +28,11 @@ const Index = () => {
   useEffect(() => {
     const savedTasks = localStorage.getItem('tasksplit_tasks');
     const savedTemplates = localStorage.getItem('tasksplit_templates');
-    if (savedTasks) setTasks(JSON.parse(savedTasks));
+    if (savedTasks) {
+      const parsed = JSON.parse(savedTasks);
+      // Reset timers on load to prevent runaway intervals
+      setTasks(parsed.map((t: Task) => ({ ...t, isTimerRunning: false })));
+    }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
   }, []);
 
@@ -39,7 +45,7 @@ const Index = () => {
   }, [templates]);
 
   const handleAddTask = (newTask: Task) => {
-    setTasks([newTask, ...tasks]);
+    setTasks([{ ...newTask, timeSpent: 0, isTimerRunning: false }, ...tasks]);
   };
 
   const handleDeleteTask = (taskId: string) => {
@@ -60,12 +66,17 @@ const Index = () => {
     }));
   };
 
+  const handleUpdateTime = useCallback((taskId: string, seconds: number, isRunning: boolean) => {
+    setTasks(prev => prev.map(t => 
+      t.id === taskId ? { ...t, timeSpent: seconds, isTimerRunning: isRunning } : t
+    ));
+  }, []);
+
   const handleBreakdownTask = async (taskId: string) => {
     const taskToBreak = tasks.find(t => t.id === taskId);
     if (!taskToBreak) return;
 
     try {
-      // Check if there's a custom template for this task title
       const customTemplate = templates.find(t => 
         taskToBreak.title.toLowerCase().includes(t.trigger.toLowerCase())
       );
@@ -73,12 +84,10 @@ const Index = () => {
       let subtaskTitles: string[];
       
       if (customTemplate) {
-        // Use the "remembered" custom breakdown
-        await new Promise(r => setTimeout(r, 800)); // Small delay for feel
+        await new Promise(r => setTimeout(r, 800));
         subtaskTitles = customTemplate.subtasks;
         showSuccess("Using your custom breakdown!");
       } else {
-        // Fallback to simulated AI
         subtaskTitles = await simulateTaskBreakdown(taskToBreak.title);
         showSuccess("Task broken down!");
       }
@@ -128,21 +137,34 @@ const Index = () => {
                 <Menu size={24} className="text-slate-600" />
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[90%] sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <BrainCircuit className="text-indigo-600" size={20} />
-                  Custom Breakdowns
-                </SheetTitle>
-                <SheetDescription>
-                  Teach the app how to break down specific tasks. It will remember these rules for next time.
-                </SheetDescription>
+            <SheetContent className="w-[90%] sm:w-[450px] overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="text-2xl font-black">Workspace</SheetTitle>
+                <SheetDescription>Manage your custom rules and track your productivity.</SheetDescription>
               </SheetHeader>
-              <TemplateManager 
-                templates={templates} 
-                onSaveTemplate={handleSaveTemplate}
-                onDeleteTemplate={handleDeleteTemplate}
-              />
+              
+              <Tabs defaultValue="analytics" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="analytics" className="gap-2">
+                    <Timer size={16} />
+                    Time Log
+                  </TabsTrigger>
+                  <TabsTrigger value="rules" className="gap-2">
+                    <BrainCircuit size={16} />
+                    Rules
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="analytics">
+                  <TimeAnalytics tasks={tasks} />
+                </TabsContent>
+                <TabsContent value="rules">
+                  <TemplateManager 
+                    templates={templates} 
+                    onSaveTemplate={handleSaveTemplate}
+                    onDeleteTemplate={handleDeleteTemplate}
+                  />
+                </TabsContent>
+              </Tabs>
             </SheetContent>
           </Sheet>
         </div>
@@ -154,10 +176,6 @@ const Index = () => {
             Big goals, <br />
             <span className="text-indigo-600">small steps.</span>
           </h2>
-          <p className="text-lg text-slate-500 max-w-xl mx-auto">
-            Add your tasks below and use the "Break Down" button to turn them into actionable steps.
-          </p>
-          
           <div className="pt-4">
             <TaskInput onAddTask={handleAddTask} />
           </div>
@@ -188,6 +206,7 @@ const Index = () => {
                   onToggleSubtask={handleToggleSubtask}
                   onDeleteTask={handleDeleteTask}
                   onBreakdown={handleBreakdownTask}
+                  onUpdateTime={handleUpdateTime}
                 />
               ))}
             </div>

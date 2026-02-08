@@ -10,10 +10,13 @@ export interface Task {
   description?: string;
   subtasks: Subtask[];
   createdAt: Date;
+  timeSpent: number; // in seconds
+  isTimerRunning?: boolean;
+  lastTimerStart?: number; // timestamp
 }
 
 export interface TaskTemplate {
   id: string;
-  trigger: string; // The task title that triggers this template
+  trigger: string;
   subtasks: string[];
 }
