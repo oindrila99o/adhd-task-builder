@@ -16,9 +16,7 @@ import {
   Pause, 
   Clock, 
   Bookmark, 
-  BookmarkCheck,
-  Target,
-  Layers
+  BookmarkCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -122,81 +120,71 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
     )}>
       {/* Header Section */}
       <div className="flex items-start justify-between gap-4 mb-6">
-        <div className="flex gap-4 flex-1">
-          <div className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors duration-300",
-            task.isTimerRunning ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-slate-50 text-slate-400"
-          )}>
-            {totalCount > 0 ? <Layers size={24} /> : <Target size={24} />}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-xl font-black text-slate-800 truncate leading-tight">
+              {task.title}
+            </h3>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onDeleteTask(task.id)}
+              className="w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 shrink-0"
+            >
+              <Trash2 size={18} />
+            </Button>
           </div>
           
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-xl font-black text-slate-800 truncate leading-tight">
-                {task.title}
-              </h3>
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-tight transition-all",
+              task.isTimerRunning ? "bg-indigo-100 text-indigo-700 animate-pulse" : "bg-slate-100 text-slate-500"
+            )}>
+              <Clock size={14} />
+              {formatTime(task.timeSpent)}
             </div>
-            
-            <div className="flex items-center gap-2">
-              <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-tight transition-all",
-                task.isTimerRunning ? "bg-indigo-100 text-indigo-700 animate-pulse" : "bg-slate-100 text-slate-500"
-              )}>
-                <Clock size={14} />
-                {formatTime(task.timeSpent)}
-              </div>
 
-              <div className="flex items-center gap-1">
-                {task.isRemembered ? (
-                  <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
-                    <BookmarkCheck size={14} />
-                  </div>
-                ) : (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => onRemember(task.id)}
-                    className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                    title="Remember time taken"
-                  >
-                    <Bookmark size={14} />
-                  </Button>
-                )}
-
+            <div className="flex items-center gap-1">
+              {task.isRemembered ? (
+                <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
+                  <BookmarkCheck size={14} />
+                </div>
+              ) : (
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={toggleMainTimer}
-                  className={cn(
-                    "w-7 h-7 rounded-full transition-all",
-                    task.isTimerRunning ? "text-indigo-600 bg-indigo-100" : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                  )}
-                  title={task.isTimerRunning ? "Pause Timer" : "Start Timer"}
+                  onClick={() => onRemember(task.id)}
+                  className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                  title="Remember time taken"
                 >
-                  {task.isTimerRunning ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                  <Bookmark size={14} />
                 </Button>
-              </div>
-
-              {totalCount > 0 && (
-                <span className="text-xs font-bold text-slate-400 ml-1">
-                  {completedCount}/{totalCount} steps
-                </span>
               )}
+
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleMainTimer}
+                className={cn(
+                  "w-7 h-7 rounded-full transition-all",
+                  task.isTimerRunning ? "text-indigo-600 bg-indigo-100" : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                )}
+                title={task.isTimerRunning ? "Pause Timer" : "Start Timer"}
+              >
+                {task.isTimerRunning ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+              </Button>
             </div>
+
+            {totalCount > 0 && (
+              <span className="text-xs font-bold text-slate-400 ml-1">
+                {completedCount}/{totalCount} steps
+              </span>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-1">
           <ManualTimeLog onLogTime={handleManualLog} />
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => onDeleteTask(task.id)}
-            className="w-10 h-10 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50"
-          >
-            <Trash2 size={20} />
-          </Button>
         </div>
       </div>
 

@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Task } from '@/types/task';
-import { Clock, Timer, CheckCircle2, BookmarkCheck } from 'lucide-react';
+import { Clock, Timer, CheckCircle2, BookmarkCheck, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TimeAnalyticsProps {
   tasks: Task[];
-  onRemember: (taskId: string) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -22,7 +23,7 @@ const formatTime = (seconds: number) => {
   return parts.join(' ');
 };
 
-const TimeAnalytics = ({ tasks }: Omit<TimeAnalyticsProps, 'onRemember'>) => {
+const TimeAnalytics = ({ tasks, onDeleteTask }: TimeAnalyticsProps) => {
   const totalSeconds = tasks.reduce((acc, task) => acc + task.timeSpent, 0);
   const completedTasksCount = tasks.filter(t => t.subtasks.length > 0 && t.subtasks.every(s => s.completed)).length;
 
@@ -63,10 +64,10 @@ const TimeAnalytics = ({ tasks }: Omit<TimeAnalyticsProps, 'onRemember'>) => {
               return (
                 <div 
                   key={task.id} 
-                  className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white shadow-sm"
+                  className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white shadow-sm group"
                 >
-                  <div className="flex flex-col items-start text-left gap-1">
-                    <span className={`text-sm font-bold ${isDone ? 'text-emerald-600' : 'text-slate-700'}`}>
+                  <div className="flex flex-col items-start text-left gap-1 min-w-0 flex-1">
+                    <span className={`text-sm font-bold truncate w-full ${isDone ? 'text-emerald-600' : 'text-slate-700'}`}>
                       {task.title}
                     </span>
                     <div className="flex items-center gap-3">
@@ -80,6 +81,15 @@ const TimeAnalytics = ({ tasks }: Omit<TimeAnalyticsProps, 'onRemember'>) => {
                       )}
                     </div>
                   </div>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onDeleteTask(task.id)}
+                    className="w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
                 </div>
               );
             })}

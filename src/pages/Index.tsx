@@ -258,7 +258,7 @@ const Index = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="analytics">
-                  <TimeAnalytics tasks={tasks} />
+                  <TimeAnalytics tasks={tasks} onDeleteTask={handleDeleteTask} />
                 </TabsContent>
                 <TabsContent value="rules">
                   <TemplateManager 
