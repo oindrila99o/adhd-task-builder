@@ -15,6 +15,14 @@ export interface Task {
   lastTimerStart?: number; // timestamp
 }
 
+export interface DailyTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  isAiSuggested: boolean;
+  date: string; // YYYY-MM-DD
+}
+
 export interface TaskTemplate {
   id: string;
   trigger: string;

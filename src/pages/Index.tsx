@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Task, TaskTemplate } from '@/types/task';
+import { Task, TaskTemplate, DailyTask } from '@/types/task';
 import TaskInput from '@/components/TaskInput';
 import TaskCard from '@/components/TaskCard';
 import TemplateManager from '@/components/TemplateManager';
 import TimeAnalytics from '@/components/TimeAnalytics';
+import DailyTaskSection from '@/components/DailyTaskSection';
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { ListTodo, Sparkles, Menu, BrainCircuit, Timer } from 'lucide-react';
 import { simulateTaskBreakdown } from '@/utils/breakdown';
@@ -21,18 +22,53 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const AI_DAILY_SUGGESTIONS = [
+  "Morning Hydration (500ml)",
+  "Brush Teeth & Floss",
+  "5-Minute Mindful Breathing",
+  "Review Today's Top Priority"
+];
+
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
+  const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
 
+  // Initialize and check for day reset
   useEffect(() => {
     const savedTasks = localStorage.getItem('tasksplit_tasks');
     const savedTemplates = localStorage.getItem('tasksplit_templates');
+    const savedDaily = localStorage.getItem('tasksplit_daily');
+    
     if (savedTasks) {
       const parsed = JSON.parse(savedTasks);
       setTasks(parsed.map((t: Task) => ({ ...t, isTimerRunning: false })));
     }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
+
+    const today = new Date().toISOString().split('T')[0];
+    let currentDaily: DailyTask[] = [];
+
+    if (savedDaily) {
+      const parsedDaily = JSON.parse(savedDaily);
+      // Filter for today's tasks only
+      currentDaily = parsedDaily.filter((t: DailyTask) => t.date === today);
+    }
+
+    // If it's a new day or no AI tasks exist for today, add them
+    const hasAiTasks = currentDaily.some(t => t.isAiSuggested);
+    if (!hasAiTasks) {
+      const aiTasks: DailyTask[] = AI_DAILY_SUGGESTIONS.map(title => ({
+        id: crypto.randomUUID(),
+        title,
+        completed: false,
+        isAiSuggested: true,
+        date: today
+      }));
+      currentDaily = [...aiTasks, ...currentDaily];
+    }
+
+    setDailyTasks(currentDaily);
   }, []);
 
   useEffect(() => {
@@ -42,6 +78,10 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('tasksplit_templates', JSON.stringify(templates));
   }, [templates]);
+
+  useEffect(() => {
+    localStorage.setItem('tasksplit_daily', JSON.stringify(dailyTasks));
+  }, [dailyTasks]);
 
   const handleAddTask = (newTask: Task) => {
     setTasks([{ ...newTask, timeSpent: 0, isTimerRunning: false }, ...tasks]);
@@ -117,6 +157,28 @@ const Index = () => {
     setTemplates(templates.filter(t => t.id !== id));
   };
 
+  // Daily Ritual Handlers
+  const handleToggleDaily = (id: string) => {
+    setDailyTasks(dailyTasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const handleAddDaily = (title: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const newTask: DailyTask = {
+      id: crypto.randomUUID(),
+      title,
+      completed: false,
+      isAiSuggested: false,
+      date: today
+    };
+    setDailyTasks([newTask, ...dailyTasks]);
+    showSuccess("Added to your daily rituals!");
+  };
+
+  const handleDeleteDaily = (id: string) => {
+    setDailyTasks(dailyTasks.filter(t => t.id !== id));
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-indigo-100">
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100">
@@ -178,6 +240,16 @@ const Index = () => {
           <div className="pt-4">
             <TaskInput onAddTask={handleAddTask} />
           </div>
+        </section>
+
+        {/* Daily Rituals Section */}
+        <section className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+          <DailyTaskSection 
+            dailyTasks={dailyTasks}
+            onToggle={handleToggleDaily}
+            onAdd={handleAddDaily}
+            onDelete={handleDeleteDaily}
+          />
         </section>
 
         <section className="space-y-8">
