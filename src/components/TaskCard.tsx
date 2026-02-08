@@ -146,21 +146,36 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
                 {formatTime(task.timeSpent)}
               </div>
 
-              {task.isRemembered ? (
-                <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
-                  <BookmarkCheck size={14} />
-                </div>
-              ) : (
+              <div className="flex items-center gap-1">
+                {task.isRemembered ? (
+                  <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
+                    <BookmarkCheck size={14} />
+                  </div>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onRemember(task.id)}
+                    className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                    title="Remember time taken"
+                  >
+                    <Bookmark size={14} />
+                  </Button>
+                )}
+
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={() => onRemember(task.id)}
-                  className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                  title="Remember time taken"
+                  onClick={toggleMainTimer}
+                  className={cn(
+                    "w-7 h-7 rounded-full transition-all",
+                    task.isTimerRunning ? "text-indigo-600 bg-indigo-100" : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                  )}
+                  title={task.isTimerRunning ? "Pause Timer" : "Start Timer"}
                 >
-                  <Bookmark size={14} />
+                  {task.isTimerRunning ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
                 </Button>
-              )}
+              </div>
 
               {totalCount > 0 && (
                 <span className="text-xs font-bold text-slate-400 ml-1">
@@ -172,18 +187,6 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
         </div>
 
         <div className="flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleMainTimer}
-            className={cn(
-              "w-10 h-10 rounded-full transition-all",
-              task.isTimerRunning ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-            )}
-          >
-            {task.isTimerRunning ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-          </Button>
-          
           <ManualTimeLog onLogTime={handleManualLog} />
           
           <Button 
