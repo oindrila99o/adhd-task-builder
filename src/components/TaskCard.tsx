@@ -135,14 +135,9 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
               <h3 className="text-xl font-black text-slate-800 truncate leading-tight">
                 {task.title}
               </h3>
-              {task.isRemembered && (
-                <div className="bg-amber-100 text-amber-700 p-1 rounded-full" title="Time Remembered">
-                  <BookmarkCheck size={14} />
-                </div>
-              )}
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className={cn(
                 "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-tight transition-all",
                 task.isTimerRunning ? "bg-indigo-100 text-indigo-700 animate-pulse" : "bg-slate-100 text-slate-500"
@@ -150,8 +145,25 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
                 <Clock size={14} />
                 {formatTime(task.timeSpent)}
               </div>
+
+              {task.isRemembered ? (
+                <div className="bg-amber-100 text-amber-700 p-1.5 rounded-full" title="Time Remembered">
+                  <BookmarkCheck size={14} />
+                </div>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => onRemember(task.id)}
+                  className="w-7 h-7 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                  title="Remember time taken"
+                >
+                  <Bookmark size={14} />
+                </Button>
+              )}
+
               {totalCount > 0 && (
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs font-bold text-slate-400 ml-1">
                   {completedCount}/{totalCount} steps
                 </span>
               )}
@@ -160,17 +172,6 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
         </div>
 
         <div className="flex items-center gap-1">
-          {!task.isRemembered && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => onRemember(task.id)}
-              className="w-10 h-10 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50"
-            >
-              <Bookmark size={20} />
-            </Button>
-          )}
-          
           <Button 
             variant="ghost" 
             size="icon" 
