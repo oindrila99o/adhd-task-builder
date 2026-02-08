@@ -42,7 +42,6 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
       timerRef.current = setInterval(() => {
         if (activeSubtask) {
           onUpdateSubtaskTime(task.id, activeSubtask.id, activeSubtask.timeSpent + 1, true);
-          // Also update main task time
           onUpdateTime(task.id, task.timeSpent + 1, true);
         } else if (task.isTimerRunning) {
           onUpdateTime(task.id, task.timeSpent + 1, true);
@@ -65,7 +64,6 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
   };
 
   const toggleMainTimer = () => {
-    // If we start main timer, stop any active subtask timers
     if (!task.isTimerRunning) {
       task.subtasks.forEach(s => {
         if (s.isTimerRunning) onUpdateSubtaskTime(task.id, s.id, s.timeSpent, false);
@@ -80,7 +78,6 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
 
     const newIsRunning = !subtask.isTimerRunning;
 
-    // If we're starting a subtask timer, stop the main task timer and other subtask timers
     if (newIsRunning) {
       if (task.isTimerRunning) onUpdateTime(task.id, task.timeSpent, false);
       task.subtasks.forEach(s => {
@@ -94,6 +91,13 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
   };
 
   const handleManualLog = (seconds: number) => {
+    onUpdateTime(task.id, task.timeSpent + seconds, task.isTimerRunning || false);
+  };
+
+  const handleSubtaskManualLog = (subtaskId: string, seconds: number) => {
+    const subtask = task.subtasks.find(s => s.id === subtaskId);
+    if (!subtask) return;
+    onUpdateSubtaskTime(task.id, subtaskId, subtask.timeSpent + seconds, subtask.isTimerRunning || false);
     onUpdateTime(task.id, task.timeSpent + seconds, task.isTimerRunning || false);
   };
 
@@ -168,6 +172,7 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
                   e.stopPropagation();
                   toggleSubtaskTimer(subtask.id);
                 }}
+                onManualLog={(seconds) => handleSubtaskManualLog(subtask.id, seconds)}
               />
             ))}
           </div>

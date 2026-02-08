@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Play, Pause, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ManualTimeLog from './ManualTimeLog';
 
 interface SubtaskItemProps {
   title: string;
@@ -13,6 +14,7 @@ interface SubtaskItemProps {
   isTimerRunning?: boolean;
   onToggle: () => void;
   onToggleTimer: (e: React.MouseEvent) => void;
+  onManualLog: (seconds: number) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -21,7 +23,7 @@ const formatTime = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const SubtaskItem = ({ title, completed, timeSpent, isTimerRunning, onToggle, onToggleTimer }: SubtaskItemProps) => {
+const SubtaskItem = ({ title, completed, timeSpent, isTimerRunning, onToggle, onToggleTimer, onManualLog }: SubtaskItemProps) => {
   return (
     <div 
       className={cn(
@@ -43,7 +45,7 @@ const SubtaskItem = ({ title, completed, timeSpent, isTimerRunning, onToggle, on
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <div className={cn(
           "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors",
           isTimerRunning ? "bg-indigo-100 text-indigo-700 animate-pulse" : "bg-slate-50 text-slate-400"
@@ -53,17 +55,20 @@ const SubtaskItem = ({ title, completed, timeSpent, isTimerRunning, onToggle, on
         </div>
         
         {!completed && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleTimer}
-            className={cn(
-              "h-8 w-8 rounded-full transition-all",
-              isTimerRunning ? "text-indigo-600 bg-indigo-50" : "text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
-            )}
-          >
-            {isTimerRunning ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
-          </Button>
+          <div className="flex items-center">
+            <ManualTimeLog onLogTime={onManualLog} />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleTimer}
+              className={cn(
+                "h-8 w-8 rounded-full transition-all",
+                isTimerRunning ? "text-indigo-600 bg-indigo-50" : "text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
+              )}
+            >
+              {isTimerRunning ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+            </Button>
+          </div>
         )}
       </div>
     </div>

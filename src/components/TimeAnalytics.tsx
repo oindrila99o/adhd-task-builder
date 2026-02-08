@@ -49,7 +49,7 @@ const TimeAnalytics = ({ tasks }: TimeAnalyticsProps) => {
       <div className="space-y-4">
         <h4 className="font-black text-slate-800 flex items-center gap-2 text-lg">
           <Timer size={20} className="text-indigo-500" />
-          Detailed Activity
+          Activity History
         </h4>
         
         {tasks.length === 0 ? (
@@ -84,7 +84,7 @@ const TimeAnalytics = ({ tasks }: TimeAnalyticsProps) => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-4">
-                    <div className="space-y-3 pt-2 border-t border-slate-50">
+                    <div className="space-y-2 pt-2 border-t border-slate-50">
                       {completedSubtasks.length === 0 ? (
                         <p className="text-xs text-slate-400 italic text-center py-2">No steps completed yet.</p>
                       ) : (
@@ -99,9 +99,7 @@ const TimeAnalytics = ({ tasks }: TimeAnalyticsProps) => {
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {formatTime(sub.timeSpent)}
-                            </span>
+                            <CheckCircle2 size={14} className="text-emerald-500" />
                           </div>
                         ))
                       )}
