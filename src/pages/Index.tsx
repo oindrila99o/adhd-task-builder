@@ -8,7 +8,7 @@ import TemplateManager from '@/components/TemplateManager';
 import TimeAnalytics from '@/components/TimeAnalytics';
 import DailyTaskSection from '@/components/DailyTaskSection';
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { ListTodo, Sparkles, Menu, BrainCircuit, Timer } from 'lucide-react';
+import { ListTodo, Sparkles, Menu, BrainCircuit, Timer, CalendarDays } from 'lucide-react';
 import { simulateTaskBreakdown } from '@/utils/breakdown';
 import { showSuccess, showError } from '@/utils/toast';
 import {
@@ -231,7 +231,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+      <main className="max-w-5xl mx-auto px-6 py-12 space-y-12">
         <section className="text-center space-y-6">
           <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 max-w-2xl mx-auto leading-tight">
             Big goals, <br />
@@ -242,47 +242,67 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Daily Rituals Section */}
-        <section className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-          <DailyTaskSection 
-            dailyTasks={dailyTasks}
-            onToggle={handleToggleDaily}
-            onAdd={handleAddDaily}
-            onDelete={handleDeleteDaily}
-          />
-        </section>
+        <Tabs defaultValue="tasks" className="w-full">
+          <div className="flex justify-center mb-8">
+            <TabsList className="bg-white border border-slate-100 p-1 h-14 rounded-2xl shadow-sm">
+              <TabsTrigger 
+                value="tasks" 
+                className="rounded-xl px-8 h-full data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all gap-2 font-bold"
+              >
+                <ListTodo size={18} />
+                Main Tasks
+              </TabsTrigger>
+              <TabsTrigger 
+                value="daily" 
+                className="rounded-xl px-8 h-full data-[state=active]:bg-amber-500 data-[state=active]:text-white transition-all gap-2 font-bold"
+              >
+                <CalendarDays size={18} />
+                Daily Rituals
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <section className="space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <TabsContent value="tasks" className="space-y-8 outline-none">
+            <div className="flex items-center gap-2 mb-2">
               <ListTodo className="text-indigo-600" size={20} />
               <h3 className="text-xl font-bold text-slate-800">Your Tasks</h3>
             </div>
-          </div>
 
-          {tasks.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ListTodo className="text-slate-300" size={32} />
+            {tasks.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ListTodo className="text-slate-300" size={32} />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-600">Your list is empty</h4>
+                <p className="text-slate-400">Add a task above to get started.</p>
               </div>
-              <h4 className="text-lg font-semibold text-slate-600">Your list is empty</h4>
-              <p className="text-slate-400">Add a task above to get started.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {tasks.map(task => (
+                  <TaskCard 
+                    key={task.id} 
+                    task={task} 
+                    onToggleSubtask={handleToggleSubtask}
+                    onDeleteTask={handleDeleteTask}
+                    onBreakdown={handleBreakdownTask}
+                    onUpdateTime={handleUpdateTime}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="daily" className="outline-none">
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+              <DailyTaskSection 
+                dailyTasks={dailyTasks}
+                onToggle={handleToggleDaily}
+                onAdd={handleAddDaily}
+                onDelete={handleDeleteDaily}
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {tasks.map(task => (
-                <TaskCard 
-                  key={task.id} 
-                  task={task} 
-                  onToggleSubtask={handleToggleSubtask}
-                  onDeleteTask={handleDeleteTask}
-                  onBreakdown={handleBreakdownTask}
-                  onUpdateTime={handleUpdateTime}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+          </TabsContent>
+        </Tabs>
       </main>
 
       <footer className="py-12 border-t border-slate-100 mt-20">
