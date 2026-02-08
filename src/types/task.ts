@@ -11,3 +11,9 @@ export interface Task {
   subtasks: Subtask[];
   createdAt: Date;
 }
+
+export interface TaskTemplate {
+  id: string;
+  trigger: string; // The task title that triggers this template
+  subtasks: string[];
+}

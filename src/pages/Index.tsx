@@ -1,31 +1,42 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Task } from '@/types/task';
+import { Task, TaskTemplate } from '@/types/task';
 import TaskInput from '@/components/TaskInput';
 import TaskCard from '@/components/TaskCard';
+import TemplateManager from '@/components/TemplateManager';
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { ListTodo, Sparkles, LayoutGrid } from 'lucide-react';
+import { ListTodo, Sparkles, Menu, Settings, BrainCircuit } from 'lucide-react';
 import { simulateTaskBreakdown } from '@/utils/breakdown';
 import { showSuccess, showError } from '@/utils/toast';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [templates, setTemplates] = useState<TaskTemplate[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('tasksplit_tasks');
-    if (saved) {
-      try {
-        setTasks(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load tasks", e);
-      }
-    }
+    const savedTasks = localStorage.getItem('tasksplit_tasks');
+    const savedTemplates = localStorage.getItem('tasksplit_templates');
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
+    if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
   }, []);
 
   useEffect(() => {
     localStorage.setItem('tasksplit_tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem('tasksplit_templates', JSON.stringify(templates));
+  }, [templates]);
 
   const handleAddTask = (newTask: Task) => {
     setTasks([newTask, ...tasks]);
@@ -54,7 +65,23 @@ const Index = () => {
     if (!taskToBreak) return;
 
     try {
-      const subtaskTitles = await simulateTaskBreakdown(taskToBreak.title);
+      // Check if there's a custom template for this task title
+      const customTemplate = templates.find(t => 
+        taskToBreak.title.toLowerCase().includes(t.trigger.toLowerCase())
+      );
+
+      let subtaskTitles: string[];
+      
+      if (customTemplate) {
+        // Use the "remembered" custom breakdown
+        await new Promise(r => setTimeout(r, 800)); // Small delay for feel
+        subtaskTitles = customTemplate.subtasks;
+        showSuccess("Using your custom breakdown!");
+      } else {
+        // Fallback to simulated AI
+        subtaskTitles = await simulateTaskBreakdown(taskToBreak.title);
+        showSuccess("Task broken down!");
+      }
       
       setTasks(tasks.map(task => {
         if (task.id === taskId) {
@@ -69,10 +96,17 @@ const Index = () => {
         }
         return task;
       }));
-      showSuccess("Task broken down!");
     } catch (error) {
       showError("Failed to break down task");
     }
+  };
+
+  const handleSaveTemplate = (template: TaskTemplate) => {
+    setTemplates([template, ...templates]);
+  };
+
+  const handleDeleteTemplate = (id: string) => {
+    setTemplates(templates.filter(t => t.id !== id));
   };
 
   return (
@@ -87,10 +121,30 @@ const Index = () => {
               TaskSplit
             </h1>
           </div>
-          <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-500">
-            <a href="#" className="hover:text-indigo-600 transition-colors">Dashboard</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">History</a>
-          </div>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
+                <Menu size={24} className="text-slate-600" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[90%] sm:w-[400px]">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <BrainCircuit className="text-indigo-600" size={20} />
+                  Custom Breakdowns
+                </SheetTitle>
+                <SheetDescription>
+                  Teach the app how to break down specific tasks. It will remember these rules for next time.
+                </SheetDescription>
+              </SheetHeader>
+              <TemplateManager 
+                templates={templates} 
+                onSaveTemplate={handleSaveTemplate}
+                onDeleteTemplate={handleDeleteTemplate}
+              />
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
