@@ -121,15 +121,15 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
       {/* Header Section */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-xl font-black text-slate-800 truncate leading-tight">
+          <div className="flex items-start gap-2 mb-2">
+            <h3 className="text-xl font-black text-slate-800 line-clamp-2 leading-tight flex-1">
               {task.title}
             </h3>
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => onDeleteTask(task.id)}
-              className="w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 shrink-0"
+              className="w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 shrink-0 mt-0.5"
             >
               <Trash2 size={18} />
             </Button>
