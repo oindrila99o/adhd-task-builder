@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Task } from '@/types/task';
 import SubtaskItem from './SubtaskItem';
+import ManualTimeLog from './ManualTimeLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,10 @@ interface TaskCardProps {
 }
 
 const formatTime = (seconds: number) => {
-  const m = Math.floor(seconds / 60);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
@@ -55,6 +58,10 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
     onUpdateTime(task.id, task.timeSpent, !task.isTimerRunning);
   };
 
+  const handleManualLog = (seconds: number) => {
+    onUpdateTime(task.id, task.timeSpent + seconds, task.isTimerRunning || false);
+  };
+
   return (
     <Card className="overflow-hidden border-none shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="pb-3">
@@ -84,6 +91,8 @@ const TaskCard = ({ task, onToggleSubtask, onDeleteTask, onBreakdown, onUpdateTi
             >
               {task.isTimerRunning ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
             </Button>
+            
+            <ManualTimeLog onLogTime={handleManualLog} />
             
             {totalCount === 0 && (
               <Button 
