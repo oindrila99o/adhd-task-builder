@@ -30,7 +30,6 @@ const Index = () => {
     const savedTemplates = localStorage.getItem('tasksplit_templates');
     if (savedTasks) {
       const parsed = JSON.parse(savedTasks);
-      // Reset timers on load to prevent runaway intervals
       setTasks(parsed.map((t: Task) => ({ ...t, isTimerRunning: false })));
     }
     if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
@@ -151,7 +150,7 @@ const Index = () => {
                   </TabsTrigger>
                   <TabsTrigger value="rules" className="gap-2">
                     <BrainCircuit size={16} />
-                    Rules
+                    Custom Breakdowns
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="analytics">
