@@ -34,7 +34,6 @@ const Index = () => {
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
 
-  // Initialize and check for day reset
   useEffect(() => {
     const savedTasks = localStorage.getItem('tasksplit_tasks');
     const savedTemplates = localStorage.getItem('tasksplit_templates');
@@ -90,19 +89,23 @@ const Index = () => {
   }, [dailyTasks]);
 
   const handleAddTask = (newTask: Task) => {
-    setTasks([{ ...newTask, timeSpent: 0, isTimerRunning: false }, ...tasks]);
+    setTasks([{ ...newTask, timeSpent: 0, isTimerRunning: false, isRemembered: false }, ...tasks]);
   };
 
   const handleDeleteTask = (taskId: string) => {
     setTasks(tasks.filter(t => t.id !== taskId));
   };
 
+  const handleRememberTask = (taskId: string) => {
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, isRemembered: true } : t));
+    showSuccess("Task time remembered!");
+  };
+
   const handleToggleSubtask = (taskId: string, subtaskId: string) => {
-    setTasks(tasks.map(task => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          subtasks: task.subtasks.map(sub => 
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.map(task => {
+        if (task.id === taskId) {
+          const updatedSubtasks = task.subtasks.map(sub => 
             sub.id === subtaskId 
               ? { 
                   ...sub, 
@@ -111,11 +114,22 @@ const Index = () => {
                   completedAt: !sub.completed ? new Date() : undefined
                 } 
               : sub
-          )
-        };
+          );
+          
+          return { ...task, subtasks: updatedSubtasks };
+        }
+        return task;
+      });
+
+      // Check if the task is now fully completed and not remembered
+      const targetTask = updatedTasks.find(t => t.id === taskId);
+      if (targetTask && targetTask.subtasks.length > 0 && targetTask.subtasks.every(s => s.completed) && !targetTask.isRemembered) {
+        showSuccess("Task completed and cleared (not remembered)");
+        return updatedTasks.filter(t => t.id !== taskId);
       }
-      return task;
-    }));
+
+      return updatedTasks;
+    });
   };
 
   const handleUpdateTime = useCallback((taskId: string, seconds: number, isRunning: boolean) => {
@@ -244,7 +258,7 @@ const Index = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="analytics">
-                  <TimeAnalytics tasks={tasks} />
+                  <TimeAnalytics tasks={tasks} onRemember={handleRememberTask} />
                 </TabsContent>
                 <TabsContent value="rules">
                   <TemplateManager 

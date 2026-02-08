@@ -16,6 +16,7 @@ export interface Task {
   timeSpent: number; // in seconds
   isTimerRunning?: boolean;
   lastTimerStart?: number; // timestamp
+  isRemembered?: boolean;
 }
 
 export interface DailyTask {

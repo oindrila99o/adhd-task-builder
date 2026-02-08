@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Task } from '@/types/task';
-import { Clock, Timer, CheckCircle2, Calendar } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { format } from 'date-fns';
+import { Clock, Timer, CheckCircle2, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TimeAnalyticsProps {
   tasks: Task[];
+  onRemember: (taskId: string) => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -23,7 +23,7 @@ const formatTime = (seconds: number) => {
   return parts.join(' ');
 };
 
-const TimeAnalytics = ({ tasks }: TimeAnalyticsProps) => {
+const TimeAnalytics = ({ tasks, onRemember }: TimeAnalyticsProps) => {
   const totalSeconds = tasks.reduce((acc, task) => acc + task.timeSpent, 0);
   const completedTasksCount = tasks.filter(t => t.subtasks.length > 0 && t.subtasks.every(s => s.completed)).length;
 
@@ -49,68 +49,60 @@ const TimeAnalytics = ({ tasks }: TimeAnalyticsProps) => {
       <div className="space-y-4">
         <h4 className="font-black text-slate-800 flex items-center gap-2 text-lg">
           <Timer size={20} className="text-indigo-500" />
-          Activity History
+          Time Log
         </h4>
         
         {tasks.length === 0 ? (
           <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-            <p className="text-sm text-slate-400 italic">No activity recorded yet.</p>
+            <p className="text-sm text-slate-400 italic">No active logs.</p>
           </div>
         ) : (
-          <Accordion type="single" collapsible className="space-y-3">
+          <div className="space-y-3">
             {tasks.map(task => {
-              const completedSubtasks = task.subtasks.filter(s => s.completed);
               const isDone = task.subtasks.length > 0 && task.subtasks.every(s => s.completed);
               
               return (
-                <AccordionItem 
+                <div 
                   key={task.id} 
-                  value={task.id} 
-                  className="border border-slate-100 rounded-2xl bg-white shadow-sm overflow-hidden px-4"
+                  className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white shadow-sm"
                 >
-                  <AccordionTrigger className="hover:no-underline py-4">
-                    <div className="flex flex-col items-start text-left gap-1">
-                      <span className={`text-sm font-bold ${isDone ? 'text-emerald-600' : 'text-slate-700'}`}>
-                        {task.title}
+                  <div className="flex flex-col items-start text-left gap-1">
+                    <span className={`text-sm font-bold ${isDone ? 'text-emerald-600' : 'text-slate-700'}`}>
+                      {task.title}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                        {formatTime(task.timeSpent)}
                       </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                          {formatTime(task.timeSpent)}
+                      {task.isRemembered && (
+                        <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1">
+                          <BookmarkCheck size={10} /> Remembered
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          {completedSubtasks.length} / {task.subtasks.length} steps
-                        </span>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <div className="space-y-2 pt-2 border-t border-slate-50">
-                      {completedSubtasks.length === 0 ? (
-                        <p className="text-xs text-slate-400 italic text-center py-2">No steps completed yet.</p>
-                      ) : (
-                        completedSubtasks.map(sub => (
-                          <div key={sub.id} className="flex items-center justify-between bg-slate-50/50 p-2 rounded-xl border border-slate-100">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-semibold text-slate-700">{sub.title}</span>
-                              {sub.completedAt && (
-                                <span className="text-[9px] text-slate-400 flex items-center gap-1">
-                                  <Calendar size={10} />
-                                  {format(new Date(sub.completedAt), 'MMM d, yyyy')}
-                                </span>
-                              )}
-                            </div>
-                            <CheckCircle2 size={14} className="text-emerald-500" />
-                          </div>
-                        ))
                       )}
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
+                  </div>
+                  
+                  {!task.isRemembered && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onRemember(task.id)}
+                      className="text-indigo-600 hover:bg-indigo-50 gap-2 font-bold text-xs rounded-xl"
+                    >
+                      <Bookmark size={14} />
+                      Remember
+                    </Button>
+                  )}
+                </div>
               );
             })}
-          </Accordion>
+          </div>
         )}
       </div>
+      
+      <p className="text-[10px] text-slate-400 text-center italic">
+        Note: Tasks completed without being "remembered" will be automatically cleared.
+      </p>
     </div>
   );
 };
